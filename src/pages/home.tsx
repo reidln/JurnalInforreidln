@@ -28,10 +28,9 @@ const logTextDict: { [key: string]: number } = {};
 function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
     const groupRef = useRef<THREE.Group>(null!)
     const [targetRotSphere, setTargetRotSphere] = useState<number>(0)
-    const logsCacheRef = useRef<Array<{ fname: string; x: number; y: number; title: string; date: string }>>([])
 
-    // 1. GENERATE THE TATEGAKI TEXTURE FOR THE 3D SPHERE
-    const { texture, canvas, ctx } = useMemo(() => {
+    // 1. GENERATE CANVAS, TEXTURE, AND PARSE LOG DATA
+    const { texture, canvas, ctx, logsCache } = useMemo(() => {
         const canvas = document.createElement('canvas')
         canvas.width = 2048
         canvas.height = 1536
@@ -40,22 +39,22 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
         const texture = new THREE.CanvasTexture(canvas)
         texture.colorSpace = THREE.SRGBColorSpace
 
+        const cache: Array<{ fname: string; x: number; y: number; title: string; date: string }> = []
+
         const addLog = (fname: string, x: number, y: number) => {
             const posAngle = (x / canvas.width) * Math.PI * 2;
             logTextDict[fname] = posAngle;
 
-            fetch(`/src/journalLogs/${fname}.md`)
-                .then((res) => res.text())
-                .then((loadedFile) => {
-                    const title = loadedFile.split('\n')[1]?.replace('title: ', '') || 'Untitled'
-                    const date = loadedFile.split('\n')[3]?.replace('date: ', '').substring(0, 10) || fname
-                    
-                    logTextDict[date] = -posAngle + (50 * Math.PI) / 180;
+            const filePath = `/src/journalLogs/${fname}.md`
+            const loadedFile = logFiles[filePath]
 
-                    logsCacheRef.current.push({ fname, x, y, title, date })
-                    redrawCanvas()
-                })
-                .catch((err) => console.error('Failed mid-script load:', err))
+            if (loadedFile) {
+                const title = loadedFile.split('\n')[1]?.replace('title: ', '') || 'Untitled'
+                const date = loadedFile.split('\n')[3]?.replace('date: ', '').substring(0, 10) || fname
+                
+                logTextDict[date] = -posAngle + (50 * Math.PI) / 180;
+                cache.push({ fname, x, y, title, date })
+            }
         }
 
         if (ctx) {
@@ -63,15 +62,15 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             addLog('2026-08-06', 320, 700)
         }
 
-        return { texture, canvas, ctx }
+        return { texture, canvas, ctx, logsCache: cache }
     }, [])
 
-    // Draw to canvas ONLY on selection changes or initial data load
+    // 2. DRAW TO CANVAS ON SELECTION CHANGES OR INITIALIZATION
     const redrawCanvas = useCallback(() => {
         if (!ctx) return
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        logsCacheRef.current.forEach(({ date, title, x, y }) => {
+        logsCache.forEach(({ date, title, x, y }) => {
             const [year, month, day] = date.split('-')
             ctx.font = '600 24px "M PLUS U", sans-serif'
             ctx.fillStyle = '#4488ff'
@@ -104,9 +103,9 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
         })
 
         texture.needsUpdate = true
-    }, [canvas, ctx, texture, selectedDate])
+    }, [canvas, ctx, texture, selectedDate, logsCache])
 
-    // Update texture whenever selectedDate changes
+    // Update texture on load or whenever selectedDate changes
     useEffect(() => {
         redrawCanvas()
     }, [selectedDate, redrawCanvas])
@@ -259,13 +258,12 @@ function Home() {
         if (matched) {
             setSelectedContent(matched.content)
         } else {
-            fetch(`/src/journalLogs/${selectedSlug}.md`)
-                .then((res) => {
-                    if (!res.ok) throw new Error('Not found')
-                    return res.text()
-                })
-                .then((text) => setSelectedContent(text))
-                .catch(() => setSelectedContent('# 404\nFile log tidak ditemukan.'))
+            const directMatchPath = `/src/journalLogs/${selectedSlug}.md`
+            if (logFiles[directMatchPath]) {
+                setSelectedContent(logFiles[directMatchPath])
+            } else {
+                setSelectedContent('# 404\nFile log tidak ditemukan.')
+            }
         }
     }, [selectedSlug, logs])
 
