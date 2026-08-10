@@ -8,8 +8,4 @@ export default defineConfig({
     tailwindcss(), // 👈 CRITICAL: This plugin must sit BEFORE react()
     react(),
   ],
-  base: "/", // Ensures assets are resolved from the root path
-  build: {
-    outDir: "dist"
-  }
 })

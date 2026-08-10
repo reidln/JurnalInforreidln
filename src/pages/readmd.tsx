@@ -14,7 +14,7 @@ interface Frontmatter {
 }
 
 // Eagerly import raw markdown files dari folder logs
-const logFiles = import.meta.glob('/src/logs/*.md', {
+const logFiles = import.meta.glob('/src/journalLogs/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,

@@ -12,7 +12,7 @@ interface LogMeta {
 }
 
 // Automatically load all .md files in src/logs/ in raw text format
-const logFiles = import.meta.glob('/src/logs/*.md', {
+const logFiles = import.meta.glob('/src/journalLogs/*.md', {
     query: '?raw',
     import: 'default',
     eager: true,
@@ -44,7 +44,7 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             const posAngle = (x / canvas.width) * Math.PI * 2;
             logTextDict[fname] = posAngle;
 
-            fetch(`/src/logs/${fname}.md`)
+            fetch(`/src/journalLogs/${fname}.md`)
                 .then((res) => res.text())
                 .then((loadedFile) => {
                     const title = loadedFile.split('\n')[1]?.replace('title: ', '') || 'Untitled'
@@ -259,7 +259,7 @@ function Home() {
         if (matched) {
             setSelectedContent(matched.content)
         } else {
-            fetch(`/src/logs/${selectedSlug}.md`)
+            fetch(`/src/journalLogs/${selectedSlug}.md`)
                 .then((res) => {
                     if (!res.ok) throw new Error('Not found')
                     return res.text()
