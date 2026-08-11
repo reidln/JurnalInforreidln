@@ -99,9 +99,18 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             const charArray = text.split('')
             const startY = y
             const spacing = 24
+            const numbers:Array<string> = ['1','2','3','4','5','6','7','8','9','0']
 
             charArray.forEach((char, index) => {
-                ctx.fillText(char, x, startY + index * spacing)
+                ctx.translate(x-5,(startY+index*spacing))
+                if(numbers.includes(char)){
+                ctx.rotate(90 * Math.PI / 180); // Rotate 45 degrees
+                }
+                ctx.fillText(char, 0, 0)
+                if(numbers.includes(char)){
+                ctx.rotate(-90 * Math.PI / 180); // Rotate 45 degrees
+                }
+                ctx.translate(-x+5,-(startY+index*spacing))
             })
 
             ctx.font = '600 16px "M PLUS U", sans-serif'
@@ -382,8 +391,8 @@ function Home() {
                                                                         key={log.slug}
                                                                         onClick={() => redirectToLog(log.slug)}
                                                                         className={`text-left p-2 rounded-xl border transition-all cursor-pointer ${selectedSlug === log.slug
-                                                                            ? 'bg-[#60f] text-white border-[#60f] shadow-md'
-                                                                            : 'bg-transparent text-[#60f] border-[#60f]/10 hover:bg-[#60f]/10 hover:border-[#60f]/30 hover:shadow-md'
+                                                                            ? 'bg-[#0f8] text-white border-[#0f8] shadow-md'
+                                                                            : 'bg-[#a0f]/5 text-[#60f] border-[#60f]/10 hover:bg-[#0f8]/10 hover:border-[#0f8]/30 hover:shadow-md'
                                                                             }`}
                                                                     >
                                                                         <div className="text-xs font-semibold opacity-75">{log.date}</div>
