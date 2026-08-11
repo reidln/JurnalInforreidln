@@ -2,7 +2,6 @@ import { useState, useRef, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Canvas, useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
-import Navbar from '../navbar'
 
 interface LogMeta {
     slug: string
@@ -336,8 +335,7 @@ function Home() {
             <div className="absolute left-[5vw] bg-radial top-100 from-0% from-[#fff4ffff] to-70% to-[#ffffff00] w-4xl h-[20vw]"></div>
 
             {/* FOREGROUND CONTENT */}
-            <div className="relative z-10 pointer-events-auto">
-                <Navbar />
+            <div className="relative z-10 pointer-events-auto">=
 
                 <main id="center" className="mx-auto max-w-450 px-6 min-h-[calc(100vh-80px)] flex flex-col justify-center items-start py-12">
                     <h1 style={{ userSelect: "none" }} className="text-5xl sm:text-8xl mt-32 font-black tracking-tight max-w-5xl leading-20">

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import Navbar from '../navbar'
 
 // Tipe data metadata Frontmatter
 interface Frontmatter {

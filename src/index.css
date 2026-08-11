@@ -3,9 +3,17 @@
 /* 1. Import the font directly into your CSS engine */
 @import url('https://googleapis.com');
 
+@font-face {
+  font-family: 'omori';
+  src: url('./fonts/OMORI_GAME2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
 /* 2. Bind it to your Tailwind theme variable */
 @theme {
   --font-mplus: "M PLUS U", sans-serif;
   --font-murecho: "Murecho", sans-serif;
   --font-mpluscode: "M PLUS 1 Code", sans-serif;
+  --font-omori:"omori", sans-serif;
 }
