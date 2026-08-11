@@ -332,10 +332,10 @@ function Home() {
             </div>
             <div className="fixed left-0 top-0 bg-linear-to-r from-[#effffaff] to-[#effffaff] w-[50vw] h-screen"></div>
             <div className="fixed right-0 top-0 bg-linear-to-r from-[#effffaff] to-[#effffa00] w-[50vw] h-screen"></div>
-            <div className="absolute left-[5vw] bg-radial top-100 from-0% from-[#fff4ffff] to-70% to-[#ffffff00] w-4xl h-[20vw]"></div>
+            {/*<div className="absolute left-[5vw] bg-radial top-100 from-0% from-[#fff4ffff] to-70% to-[#ffffff00] w-4xl h-[20vw]"></div>*/}
 
             {/* FOREGROUND CONTENT */}
-            <div className="relative z-10 pointer-events-auto">=
+            <div className="relative z-10 pointer-events-auto">
 
                 <main id="center" className="mx-auto max-w-450 px-6 min-h-[calc(100vh-80px)] flex flex-col justify-center items-start py-12">
                     <h1 style={{ userSelect: "none" }} className="text-5xl sm:text-8xl mt-32 font-black tracking-tight max-w-5xl leading-20">
