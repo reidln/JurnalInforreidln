@@ -137,10 +137,7 @@ export default function ReadMd() {
     }, [slug])
 
     return (
-        <div className="min-h-screen bg-[#222222] text-[#0f172a] flex flex-col font-murecho">
-            <div className="relative z-10 pointer-events-auto">
-                <Navbar/>
-            </div>
+        <div className="min-h-screen bg-[#0f172a] text-[#0f172a] flex flex-col font-murecho">
 
             <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10">
                 <article className="bg-[#effffa] backdrop-blur-md p-8 md:p-12 rounded-2xl shadow-xl border border-[#60f]/10">
@@ -200,14 +197,19 @@ export default function ReadMd() {
                                     </p>
                                 ),
                                 ul: ({ children }: { children?: ReactNode }) => (
-                                    <ul className="list-disc list-inside space-y-1 mb-4 text-slate-700">
+                                    <ul className="list-disc pl-6 space-y-1 my-3 text-slate-700 [&_ul]:list-[circle] [&_ul_ul]:list-[square]">
                                         {children}
                                     </ul>
                                 ),
                                 ol: ({ children }: { children?: ReactNode }) => (
-                                    <ol className="list-decimal list-inside space-y-1 mb-4 text-slate-700">
+                                    <ol className="list-decimal pl-6 space-y-1 my-3 text-slate-700">
                                         {children}
                                     </ol>
+                                ),
+                                li: ({ children }: { children?: ReactNode }) => (
+                                    <li className="leading-relaxed pl-1">
+                                        {children}
+                                    </li>
                                 ),
                                 blockquote: ({ children }: { children?: ReactNode }) => (
                                     <blockquote className="border-l-4 border-[#60f] pl-4 my-4 italic text-slate-600 bg-[#0af2] py-2 rounded-r">
