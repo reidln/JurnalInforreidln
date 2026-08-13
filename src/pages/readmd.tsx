@@ -138,6 +138,11 @@ export default function ReadMd() {
     return (
         <div className="min-h-screen bg-[#0f172a] text-[#0f172a] flex flex-col font-murecho">
 
+            {/*<div className='fixed w-screen h-screen top-20 bg-[#00001a]/60 z-5 justify-items-center'>
+                <div className='absolute w-5xl h-100 bg-[#ffff]'>
+                    <img src="a"/>
+                </div>
+            </div>*/}
             <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10">
                 <article className="bg-[#effffa] backdrop-blur-md p-8 md:p-12 rounded-2xl shadow-xl border border-[#60f]/10">
                     {meta.title ? (

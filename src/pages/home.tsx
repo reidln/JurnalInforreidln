@@ -210,7 +210,7 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             {tubes.map((tube, index) => (
                 <mesh key={index} position={tube.position} rotation={tube.rotation} renderOrder={2}>
                     <cylinderGeometry args={[lineThickness, lineThickness, tube.length, 4]} />
-                    <meshBasicMaterial color="#80ffea" opacity={1} transparent={false} />
+                    <meshBasicMaterial color="#90f8fb" opacity={1} transparent={false} />
                 </mesh>
             ))}
         </group>
@@ -341,7 +341,7 @@ function Home() {
             </div>
             <div className="fixed left-0 top-0 bg-linear-to-r from-[#effffaff] to-[#effffaff] w-[50vw] h-screen"></div>
             <div className="fixed right-0 top-0 bg-linear-to-r from-[#effffaff] to-[#effffa00] w-[50vw] h-screen"></div>
-            {/*<div className="absolute left-[5vw] bg-radial top-100 from-0% from-[#fff4ffff] to-70% to-[#ffffff00] w-4xl h-[20vw]"></div>*/}
+            <div className="absolute pl-[100px-50vw] bg-radial py-12 min-h-[calc(50vh-40px)] top-24 from-0% from-[#fff4ffff] to-70% to-[#ffffff00] w-4xl h-[20vw]"></div>
 
             {/* FOREGROUND CONTENT */}
             <div className="relative z-10 pointer-events-auto">
@@ -365,7 +365,7 @@ function Home() {
 
                         <div className="flex flex-col gap-5">
                             {Object.entries(groupedLogs).map(([year, months]) => (
-                                <div key={year} className="border-l-2 border-[#60f]/30 pl-4">
+                                <div key={year}  className="border-l-0 border-[#60f]/30 pl-4">
                                     <div className="text-xl font-extrabold text-[#60f] py-1">
                                         {year}年
                                     </div>
