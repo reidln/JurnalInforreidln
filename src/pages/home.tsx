@@ -78,6 +78,7 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             addLog('2026-08-04', 220, 640)
             addLog('2026-08-06', 320, 700)
             addLog('2026-08-11', 420, 620)
+            addLog('2026-08-13', 520, 720)
         }
 
         return { texture, canvas, ctx, logsCache: cache }
