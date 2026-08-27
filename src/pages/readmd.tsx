@@ -42,6 +42,23 @@ function parseFrontmatter(rawMarkdown: string): { meta: Frontmatter; body: strin
     return { meta, body: match[2] }
 }
 
+// Helper untuk membuat ID (slug) dari teks heading markdown
+function generateSlug(children: ReactNode): string {
+    const flattenText = (child: ReactNode): string => {
+        if (typeof child === 'string') return child;
+        if (Array.isArray(child)) return child.map(flattenText).join('');
+        if (typeof child === 'object' && child !== null && 'props' in child) {
+            return flattenText((child as any).props.children);
+        }
+        return '';
+    };
+
+    return flattenText(children)
+        .toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w-]+/g, '');
+}
+
 // Komponen Code Block Persegi dengan Nomor Baris & Copy Button
 function CodeBlock({ codeString, className }: { codeString: string; className?: string }) {
     const [copied, setCopied] = useState(false)
@@ -79,10 +96,8 @@ function CodeBlock({ codeString, className }: { codeString: string; className?: 
             {language && (
                 <div className="flex items-center justify-between pl-5 px-1 py-1 bg-slate-800 border-b border-slate-700 text-xs text-slate-400">
                     <span className="font-semibold uppercase tracking-wider font-mplus">{language}</span>
-
                 </div>
             )}
-
 
             {/* Content & Line Numbers */}
             <div className="overflow-x-auto p-2 flex leading-relaxed">
@@ -137,12 +152,6 @@ export default function ReadMd() {
 
     return (
         <div className="min-h-screen bg-[#0f172a] text-[#0f172a] flex flex-col font-murecho">
-
-            {/*<div className='fixed w-screen h-screen top-20 bg-[#00001a]/60 z-5 justify-items-center'>
-                <div className='absolute w-5xl h-100 bg-[#ffff]'>
-                    <img src="a"/>
-                </div>
-            </div>*/}
             <main className="flex-1 max-w-4xl w-full mx-auto px-6 py-10">
                 <article className="bg-[#effffa] backdrop-blur-md p-8 md:p-12 rounded-2xl shadow-xl border border-[#60f]/10">
                     {meta.title ? (
@@ -181,20 +190,29 @@ export default function ReadMd() {
                             remarkPlugins={[remarkGfm]}
                             components={{
                                 h1: ({ children }: { children?: ReactNode }) => (
-                                    <h1 className="text-3xl font-extrabold text-slate-900 mt-8 mb-4 border-b pb-2 border-slate-200">
-                                        {children}
-                                    </h1>
-                                ),
-                                h2: ({ children }: { children?: ReactNode }) => (
-                                    <h2 className="text-2xl font-bold text-slate-800 mt-6 mb-3">
-                                        {children}
-                                    </h2>
-                                ),
-                                h3: ({ children }: { children?: ReactNode }) => (
-                                    <h3 className="text-xl font-semibold text-slate-800 mt-5 mb-2">
-                                        {children}
-                                    </h3>
-                                ),
+    <h1 
+        id={generateSlug(children)} 
+        className="text-3xl font-extrabold text-slate-900 mt-8 mb-4 border-b pb-2 border-slate-200 scroll-mt-24"
+    >
+        {children}
+    </h1>
+),
+h2: ({ children }: { children?: ReactNode }) => (
+    <h2 
+        id={generateSlug(children)} 
+        className="text-2xl font-bold text-slate-800 mt-6 mb-3 scroll-mt-24"
+    >
+        {children}
+    </h2>
+),
+h3: ({ children }: { children?: ReactNode }) => (
+    <h3 
+        id={generateSlug(children)} 
+        className="text-xl font-semibold text-slate-800 mt-5 mb-2 scroll-mt-24"
+    >
+        {children}
+    </h3>
+),
                                 p: ({ children }: { children?: ReactNode }) => (
                                     <p className="text-slate-700 leading-relaxed mb-4">
                                         {children}
@@ -252,11 +270,33 @@ export default function ReadMd() {
                                         </code>
                                     )
                                 },
-                                a: ({ href, children }: { href?: string; children?: ReactNode }) => (
-                                    <a href={href} target="_blank" rel="noreferrer" className="text-[#60f] underline hover:text-purple-800">
-                                        {children}
-                                    </a>
-                                ),
+                                a: ({ href, children }: { href?: string; children?: ReactNode }) => {
+                                    // Smooth scroll untuk link internal berawalan '#'
+                                    if (href?.startsWith('#')) {
+                                        return (
+                                            <a
+                                                href={href}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    const targetId = href.substring(1);
+                                                    const targetElement = document.getElementById(targetId);
+                                                    if (targetElement) {
+                                                        targetElement.scrollIntoView({ behavior: 'smooth' });
+                                                    }
+                                                }}
+                                                className="text-[#60f] underline hover:text-purple-800 cursor-pointer"
+                                            >
+                                                {children}
+                                            </a>
+                                        );
+                                    }
+                                    // Tautan eksternal normal
+                                    return (
+                                        <a href={href} target="_blank" rel="noreferrer" className="text-[#60f] underline hover:text-purple-800">
+                                            {children}
+                                        </a>
+                                    );
+                                },
                             }}
                         >
                             {content}

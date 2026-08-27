@@ -38,12 +38,12 @@ const logFiles = import.meta.glob('/src/journalLogs/*.md', {
 
 interface SphereProps {
     targetRot: number
-    selectedDate: string
+    hoveredSlug: string // Ubah dari selectedDate
 }
 
 const logTextDict: { [key: string]: number } = {};
 
-function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
+function CustomQuadSphereLines({ targetRot, hoveredSlug }: SphereProps) {
     const groupRef = useRef<THREE.Group>(null!)
     const [targetRotSphere, setTargetRotSphere] = useState<number>(0)
 
@@ -60,8 +60,7 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
 
         const addLog = (fname: string, x: number, y: number) => {
             const posAngle = (x / canvas.width) * Math.PI * 2;
-            logTextDict[fname] = posAngle;
-
+            
             const filePath = `/src/journalLogs/${fname}.md`
             const loadedFile = logFiles[filePath]
 
@@ -69,7 +68,8 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
                 const title = loadedFile.split('\n')[1]?.replace('title: ', '') || 'Untitled'
                 const date = loadedFile.split('\n')[3]?.replace('date: ', '').substring(0, 10) || fname
                 
-                logTextDict[date] = -posAngle + (65 * Math.PI) / 180;
+                // HANYA gunakan fname (slug) sebagai dictionary key agar tidak tertimpa
+                logTextDict[fname] = -posAngle + (65 * Math.PI) / 180;
                 cache.push({ fname, x, y, title, date })
             }
         }
@@ -79,6 +79,8 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             addLog('2026-08-06', 320, 700)
             addLog('2026-08-11', 420, 620)
             addLog('2026-08-13', 520, 720)
+            addLog('2026-08-20_1', 620, 640)
+            addLog('2026-08-20_2', 720, 700)
         }
 
         return { texture, canvas, ctx, logsCache: cache }
@@ -88,12 +90,12 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
         if (!ctx) return
         ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-        logsCache.forEach(({ date, title, x, y }) => {
+        logsCache.forEach(({ fname, date, title, x, y }) => {
             const [year, month, day] = date.split('-')
-            ctx.font = '600 24px "M PLUS U", sans-serif'
-            ctx.fillStyle = '#4488ff'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
+            ctx.font = '600 16px "M PLUS U", sans-serif'
+            // Gunakan hoveredSlug dan cocokkan dengan fname
+            ctx.fillStyle = hoveredSlug === fname ? '#aaccff' : '#88aaff' 
+            ctx.textAlign = 'right'
 
             const text = `${year || '2026'}年${month || '08'}月${day || '01'}日`
             const text2 = title.split(' ')
@@ -105,18 +107,16 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
             charArray.forEach((char, index) => {
                 ctx.translate(x-5,(startY+index*spacing))
                 if(numbers.includes(char)){
+                ctx.translate(-14,-3);
                 ctx.rotate(90 * Math.PI / 180); // Rotate 45 degrees
                 }
                 ctx.fillText(char, 0, 0)
                 if(numbers.includes(char)){
-                ctx.rotate(-90 * Math.PI / 180); // Rotate 45 degrees
+                ctx.rotate(-90 * Math.PI / 180);
+                ctx.translate(14,3); // Rotate 45 degrees
                 }
                 ctx.translate(-x+5,-(startY+index*spacing))
             })
-
-            ctx.font = '600 16px "M PLUS U", sans-serif'
-            ctx.fillStyle = selectedDate === date ? '#aaccff' : '#88aaff'
-            ctx.textAlign = 'right'
 
             text2.forEach((word, index) => {
                 const titleCharArray = word.split('')
@@ -130,11 +130,11 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
         })
 
         texture.needsUpdate = true
-    }, [canvas, ctx, texture, selectedDate, logsCache])
+    }, [canvas, ctx, texture, hoveredSlug, logsCache])
 
     useEffect(() => {
         redrawCanvas()
-    }, [selectedDate, redrawCanvas])
+    }, [hoveredSlug, redrawCanvas]) // Gunakan hoveredSlug sebagai dependency
 
     useFrame((_, delta: number) => {
         setTargetRotSphere(targetRotSphere + (targetRot - targetRotSphere) * (1 - Math.exp(-5 * delta)))
@@ -221,18 +221,18 @@ function CustomQuadSphereLines({ targetRot, selectedDate }: SphereProps) {
 function Home() {
     const [targetRot, setTargetRot] = useState<number>(0);
 
-    function scrollToLogText(dateOrSlug: string) {
-        if (logTextDict[dateOrSlug] !== undefined) {
-            setTargetRot(logTextDict[dateOrSlug]);
+    function scrollToLogText(slug: string) {
+        if (logTextDict[slug] !== undefined) {
+            setTargetRot(logTextDict[slug]);
         }
     }
 
     const navigate = useNavigate()
-
     const [logs, setLogs] = useState<LogMeta[]>([])
     const [selectedSlug, setSelectedSlug] = useState<string | null>(null)
     const [selectedContent, setSelectedContent] = useState<string>('')
-    const [selectedDate, setSelectedDate] = useState<string>('')
+    // Ganti selectedDate menjadi hoveredSlug
+    const [hoveredSlug, setHoveredSlug] = useState<string>('')
 
     useEffect(() => {
         let parsedLogs: LogMeta[] = Object.entries(logFiles).map(([path, rawContent]) => {
@@ -265,7 +265,20 @@ function Home() {
             ]
         }
 
-        parsedLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        parsedLogs.sort((a, b) => {
+            // 1. Urutkan berdasarkan tanggal terlebih dahulu (Descending)
+            const dateDiff = new Date(b.date).getTime() - new Date(a.date).getTime()
+            
+            // Jika tanggalnya berbeda, gunakan hasil dateDiff
+            if (dateDiff !== 0) {
+                return dateDiff
+            }
+            
+            // 2. Jika tanggal sama, urutkan berdasarkan slug/nama file (Descending dengan natural number)
+            // Ini akan membuat 2026-08-01_2 tampil sebelum 2026-08-01_1
+            return b.slug.localeCompare(a.slug, undefined, { numeric: true })
+        })
+        
         setLogs(parsedLogs)
     }, [])
 
@@ -278,7 +291,7 @@ function Home() {
 
             const year = isValid ? d.getFullYear().toString() : '2026'
             const monthName = isValid ? MONTH_NAMES[d.getMonth()] : 'Agustus'
-            const weekNum = `${getWeekOfMonth(log.date)}週目`
+            const weekNum = `Minggu ${getWeekOfMonth(log.date)}`
 
             if (!result[year]) result[year] = {}
             if (!result[year][monthName]) result[year][monthName] = {}
@@ -328,6 +341,14 @@ function Home() {
 
     const redirectToLog = (slug: string) => {
         navigate(`/log/${slug}`)
+        window.scrollTo({
+      top: 0,
+      behavior: 'auto', // 'auto' for instant jump
+    });
+    }
+    
+    const redirectToProfile = () => {
+        navigate(`/profile`)
     }
 
     return (
@@ -337,7 +358,8 @@ function Home() {
             {/* 3D BACKGROUND LAYER */}
             <div className="fixed top-0 right-0 [scrollbar-gutter:stable] w-full md:w-1/2 h-screen z-0 pointer-events-none">
                 <Canvas flat gl={{ antialias: false, powerPreference: "high-performance" }} onCreated={(state) => state.camera.position.set(0, 0, 5)}>
-                    <CustomQuadSphereLines targetRot={targetRot} selectedDate={selectedDate} />
+                    {/* Kirim hoveredSlug ke properti Canvas */}
+                    <CustomQuadSphereLines targetRot={targetRot} hoveredSlug={hoveredSlug} />
                 </Canvas>
             </div>
             <div className="fixed left-0 top-0 bg-linear-to-r from-[#effffaff] to-[#effffaff] w-[50vw] h-screen"></div>
@@ -346,15 +368,14 @@ function Home() {
 
             {/* FOREGROUND CONTENT */}
             <div className="relative z-10 pointer-events-auto">
-
                 <main id="center" className="mx-auto max-w-450 px-6 min-h-[calc(100vh-80px)] flex flex-col justify-center items-start py-12">
                     <h1 style={{ userSelect: "none" }} className="text-5xl sm:text-8xl mt-32 font-black tracking-tight max-w-5xl leading-20">
                         <span className="text-5xl text-[#88f] font-medium">情報ノート</span> <br />
                         Jurnal Informatika <br />
                     </h1>
                     <h2 className="text-2xl sm:text-4xl font-bold tracking-tight max-w-5xl leading-10 mt-6">
-                        <span>XI D2</span> <span style={{ userSelect: "none" }} className="font-light"> | </span>
-                        <span>Rei Dillan Hartedi</span> <span style={{ userSelect: "none" }} className="font-light"> | </span>
+                        <span>XI D2</span><span style={{ userSelect: "none" }} className="font-light"> | </span>
+                        <span>Rei Dillan Hartedi</span><span style={{ userSelect: "none" }} className="font-light"> | </span>
                         <span>Absen 41</span>
                     </h2>
 
@@ -388,7 +409,11 @@ function Home() {
                                                             <div className="mt-2 flex flex-col gap-1.5 pl-2">
                                                                 {weekLogs.map((log) => (
                                                                     <button
-                                                                        onMouseEnter={() => { scrollToLogText(log.date); setSelectedDate(log.date); }}
+                                                                        // SEKARANG GUNAKAN log.slug
+                                                                        onMouseEnter={() => { 
+                                                                            scrollToLogText(log.slug); 
+                                                                            setHoveredSlug(log.slug); 
+                                                                        }}
                                                                         key={log.slug}
                                                                         onClick={() => redirectToLog(log.slug)}
                                                                         className={`text-left p-2 rounded-xl border transition-all cursor-pointer ${selectedSlug === log.slug
@@ -397,7 +422,7 @@ function Home() {
                                                                             }`}
                                                                     >
                                                                         <div className="text-xs font-semibold opacity-75">{log.date}</div>
-                                                                        <div className="text-base font-bold leading-snug">{log.title}</div>
+                                                                        <div className="text-base font-bold leading-snug"><u>{log.title}</u></div>
                                                                     </button>
                                                                 ))}
                                                             </div>
@@ -410,7 +435,21 @@ function Home() {
                                 </div>
                             ))}
                         </div>
+                        {/*<h3 className="text-sm font-bold tracking-widest mt-10 text-[#6600ff] uppercase mb-4">
+                            About me:
+                        </h3>
+                        <div>
+                            <button
+                            onClick={() => redirectToProfile()}
+                                className='text-left p-2 rounded-xl border transition-all cursor-pointer bg-[#a0f]/5 text-[#60f] border-[#60f]/10 hover:bg-[#0f8]/10 hover:border-[#0f8]/30 hover:shadow-md'
+                            >
+                                <div className="text-xs font-semibold opacity-75">Tentang</div>
+                                <div className="text-base font-bold leading-snug">Rei Dillan Hartedi</div>
+                            </button>
+                        </div>*/}
                     </div>
+                    
+                    
                 </main>
 
                 {selectedSlug && (
@@ -426,6 +465,7 @@ function Home() {
                     </section>
                 )}
             </div>
+    
         </div>
     )
 }
