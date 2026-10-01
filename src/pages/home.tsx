@@ -76,11 +76,16 @@ function CustomQuadSphereLines({ targetRot, hoveredSlug }: SphereProps) {
 
         if (ctx) {
             addLog('2026-08-04', 220, 640)
-            addLog('2026-08-06', 320, 700)
-            addLog('2026-08-11', 420, 620)
-            addLog('2026-08-13', 520, 720)
-            addLog('2026-08-20_1', 620, 640)
-            addLog('2026-08-20_2', 720, 700)
+            addLog('2026-08-06', 330, 700)
+            addLog('2026-08-11', 440, 620)
+            addLog('2026-08-13', 550, 720)
+            addLog('2026-08-20_1', 660, 640)
+            addLog('2026-08-20_2', 770, 700)
+            addLog('2026-08-20_3', 880, 620)
+            addLog('2026-09-03', 990, 720)
+            addLog('2026-09-08', 1120, 640)
+            addLog('2026-09-10', 1250, 700)
+            addLog('2026-09-15', 1380, 620)
         }
 
         return { texture, canvas, ctx, logsCache: cache }
